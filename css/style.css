@@ -7,9 +7,35 @@ html {
 }
 
 body { 
+    position: relative; /* Required for the pseudo-element */
     background-color: #050505; 
     color: white; 
-    font-family: 'Inter', sans-serif; 
+    font-family: 'Inter', sans-serif;
+    
+    /* Layer 1: Subtle Grid Pattern */
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+/* Layer 2: Faint Logo Watermark (behind all content) */
+body::before {
+    content: '';
+    position: fixed; /* This makes it stay in place during scroll */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1; /* Places the watermark behind everything else */
+    
+    /* Path to your logo */
+    background-image: url('../images/logo.png'); 
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: clamp(300px, 40vw, 600px); /* Responsive size */
+    
+    opacity: 0.04; /* Controls how faint the logo is */
 }
 
 /* Custom Gradient Text */
@@ -21,9 +47,9 @@ body {
 
 /* Custom Glassmorphism Card Style */
 .crypto-card {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(10, 10, 10, 0.6); /* Slightly darker for better contrast */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px); /* Increased blur */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
