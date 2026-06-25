@@ -21,46 +21,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     copyAddressBtn.innerHTML = originalText;
                 }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy address: ', err);
-                alert('Failed to copy address.');
-            });
+            }).catch(err => console.error('Failed to copy address: ', err));
         });
     }
-
-    // --- LIVE WEB3 DATA FETCHING ---
-    const contractAddress = "0xC7837e4D48f8B4c25d945bE54EA5E6030F1d3392";
-    // Using a public Base RPC endpoint
-    const provider = new ethers.providers.JsonRpcProvider('https://mainnet.base.org');
-
-    // The contractABI variable is loaded from js/abi.js
-    const rhntContract = new ethers.Contract(contractAddress, contractABI, provider);
-
-    async function updateLiveSupply() {
-        try {
-            const supplyElement = document.getElementById('live-total-supply');
-            if (!supplyElement) return;
-
-            // Call the totalSupply() function from your contract
-            const totalSupplyBigNumber = await rhntContract.totalSupply();
-            
-            // Tokens usually have 18 decimals, adjust if yours is different
-            const decimals = 18; 
-            const formattedSupply = ethers.utils.formatUnits(totalSupplyBigNumber, decimals);
-
-            // Format to a clean number string (e.g., "888,000,000,000")
-            const displaySupply = parseFloat(formattedSupply).toLocaleString('en-US', { maximumFractionDigits: 0 });
-
-            supplyElement.innerText = displaySupply;
-
-        } catch (error) {
-            console.error("Failed to fetch total supply:", error);
-            // If it fails, the static value from the HTML will remain visible
-        }
-    }
-
-    // Run the function on page load
-    updateLiveSupply();
 
     // --- Copy Donation Address ---
     const copyDonationBtn = document.getElementById("copy-donation-btn");
@@ -70,14 +33,51 @@ document.addEventListener('DOMContentLoaded', () => {
             const address = donationAddressEl.innerText;
             navigator.clipboard.writeText(address).then(() => {
                 const originalText = copyDonationBtn.innerHTML;
-                copyDonationBtn.innerHTML = "<i class=\"fas fa-check mr-2\"></i> Copied!";
+                copyDonationBtn.innerHTML = "<i class='fas fa-check mr-2'></i> Copied!";
                 setTimeout(() => {
                     copyDonationBtn.innerHTML = originalText;
                 }, 2000);
-            }).catch(err => {
-                console.error("Failed to copy donation address: ", err);
-                alert("Failed to copy donation address.");
-            });
+            }).catch(err => console.error("Failed to copy donation address: ", err));
         });
     }
+
+    // --- LIVE WEB3 DATA FETCHING ---
+    async function updateLiveSupply() {
+        const supplyElement = document.getElementById('live-total-supply');
+        if (!supplyElement) {
+            console.error("Could not find the element with ID 'live-total-supply'.");
+            return;
+        }
+
+        try {
+            // Check if ethers library is loaded
+            if (typeof ethers === 'undefined') {
+                console.error("Ethers.js library is not loaded.");
+                return;
+            }
+
+            const contractAddress = "0xC7837e4D48f8B4c25d945bE54EA5E6030F1d3392";
+            const provider = new ethers.providers.JsonRpcProvider('https://mainnet.base.org');
+            const rhntContract = new ethers.Contract(contractAddress, contractABI, provider);
+
+            // Fetch total supply and decimals in parallel for speed
+            const [totalSupplyBigNumber, decimals] = await Promise.all([
+                rhntContract.totalSupply(),
+                rhntContract.decimals()
+            ]);
+            
+            const formattedSupply = ethers.utils.formatUnits(totalSupplyBigNumber, decimals);
+            const displaySupply = parseFloat(formattedSupply).toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+            supplyElement.innerText = displaySupply;
+            console.log("Successfully fetched and updated total supply:", displaySupply);
+
+        } catch (error) {
+            console.error("Failed to fetch total supply from blockchain:", error);
+            // On failure, the static value in the HTML will remain visible
+        }
+    }
+
+    // Run the function
+    updateLiveSupply();
 });
