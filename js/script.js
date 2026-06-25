@@ -61,4 +61,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Run the function on page load
     updateLiveSupply();
+
+    // --- Copy Donation Address ---
+    const copyDonationBtn = document.getElementById("copy-donation-btn");
+    const donationAddressEl = document.getElementById("donationAddress");
+    if (copyDonationBtn && donationAddressEl) {
+        copyDonationBtn.addEventListener("click", () => {
+            const address = donationAddressEl.innerText;
+            navigator.clipboard.writeText(address).then(() => {
+                const originalText = copyDonationBtn.innerHTML;
+                copyDonationBtn.innerHTML = "<i class=\"fas fa-check mr-2\"></i> Copied!";
+                setTimeout(() => {
+                    copyDonationBtn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error("Failed to copy donation address: ", err);
+                alert("Failed to copy donation address.");
+            });
+        });
+    }
 });
